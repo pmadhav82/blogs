@@ -35,13 +35,77 @@ then, it install nodejs by typing following command
 
 4. Now you can clone node app from your github. Once the repo is downloaded go to that folder and run 
 `npm instal`
- which will install all the dependency.
+ which will install all the dependency. For environmental variables, you can create a new directory and create a `.env` file there. You can put all environmental variables in that file:
+
+ ```
+ touch /var/app/env/.env
+
+// to edit .env file:
+nano .env
+ ```
+ Save the `.env` file and we need `dotenv` package to load those environmental variables. For that run following command
+ ```
+ npm install dotenv
+ ```
+ Once it installed, in node.js application, we need config `dotenv` package on top of main application file.
+
+ ```
+//file:app.js
+
+require('dotenv').config({path: 'var/app/env/.env'})
+ ```
 For the access type your `publicIP:portNum`. In my case it is `http://13.54.206.174:3000/`
 
 
+5. If you want to run your sever in the background you can you `pm2` which is a process manager for node.js application. `pm2` can handle to start, restart and stop the server and log managmement. To install `pm2` run following command
+```
+npm install pm2 -g
+```
+To start the server use command:
+```
+pm2 start app.js
+```
+To verify your server is running run following command
+```
+pm2 list
+
+```
+This will display a list of all processes managed by `pm2`
+
+To stop the server
+```
+pm2 stop app.js
+```
+6. If you have a domain name and you want to use it, you need to install `nginx` which is a web server by following command
+```
+
+sudo yum install nginx
+
+```
+Once it installed, you need to configure Nginx to act as a reverse proxy for the application. Open the configuration file by following command
+
+```
+sudo nano /etc/nginx/nginx.conf
+```
+In the file in server blog add your domain name
+
+```
+
+server {
+     listen       443 ssl http2;
+       listen       [::]:443 ssl http2;
+       server_name YOURDOMAIN_NAME;
+       location = {
+proxy_pass http://localhost:3000;
+proxy_http_version 1.1;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection 'upgrade';
+proxy_set_header Host $host;
+proxy_cache_bypass $http_upgrade;
+       }
+  
+
+}
 
 
-
-
-
-
+```
