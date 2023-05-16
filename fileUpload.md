@@ -15,8 +15,8 @@
 <button type="submit" id="submit" class="btn btn-primary">Upload</button>
 </form>
 
-<div class="git">
-<img id="imageOutPut" />
+<div class="image-preview">
+<img id="imageOutPut"  />
 <p id="imageName"></p>
 </div>
 
@@ -40,6 +40,9 @@ imageInput.onchange = (ev)=>{
 }
 
 ```
+
+![preview](https://images2.imgbox.com/07/f7/ah9CzDGQ_o.png)
+
 
 ## Backend
 We have to setup basic  `multer` configuration which includes where do we want to save uploaded image, what name do we want to set up. We can filter the file as well and we can set the file size limit.
