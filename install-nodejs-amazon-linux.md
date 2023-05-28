@@ -1,4 +1,4 @@
-# How to deploy nodejs app on AWS EC2
+# How to deploy nodejs app on AWS EC2 with Domain Name
 
 1. Create ec2 instalce by choosing linux 2
 
@@ -72,6 +72,8 @@ To start the server use command:
 ```
 pm2 start app.js
 ```
+![pm2-start](https://images2.imgbox.com/93/24/UKqw1gXs_o.png)
+
 To verify your server is running run following command
 
 ```
@@ -89,26 +91,78 @@ pm2 stop app.js
 ```
 sudo yum install nginx
 ```
+To run nginx run the command `sudo systemctl start nginx` and visit `EC2` instance public IP address in the browser. You will see Nginx default welcome page.
 Once it installed, you need to configure Nginx to act as a reverse proxy for the application. Open the configuration file by following command
 
 ```
 sudo nano /etc/nginx/nginx.conf
 ```
 
-In the file in server blog add your domain name
+Then, edit the `nginx.conf` file as following:
 
 ```
-server {
-     listen       443 ssl http2;
-       listen       [::]:443 ssl http2;
-       server_name YOURDOMAIN_NAME;
-       location = {
-proxy_pass http://localhost:3000;
+
+  
+http {
+    listen 80;
+    server_name pblog.online www.pblog.online;
+
+    location / {
+      proxy_pass http://localhost:8000;
 proxy_http_version 1.1;
 proxy_set_header Upgrade $http_upgrade;
 proxy_set_header Connection 'upgrade';
 proxy_set_header Host $host;
 proxy_cache_bypass $http_upgrade;
-       }
+    }
 }
+
+
+
 ```
+Replace `pblog.online` with you `domain name`.
+Once the file edited, we need to check if it is validate or not. For that run the following command:
+```
+sudo nginx -t
+
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+
+```
+
+If the test is successful, you can reload the nginx by the command `sudo nginx -s reload`.
+You can check the nginx status by following command as well
+```
+sudo systemctl status nginx
+
+● nginx.service - The nginx HTTP and reverse proxy server
+     Loaded: loaded (/usr/lib/systemd/system/nginx.service; disabled; preset: disabled)
+     Active: active (running) since Tue 2023-05-16 03:29:05 UTC; 43min ago
+
+
+```
+
+## Add Domain Name
+To add a custom domain name, first  you need to assign Elastic IP address for you `EC2` instance. You can do that from EC2 Dashbord, there you will elastic ip under `Network & Security`. Once you have assigned elastic ip address go to your domain name provider account and find `DNS Records` section. There we need to add new record. So, click on `Add new record` option. Select record type `A`, in `Name` section type `www` and value will be your elastic IP address and save it. 
+
+![DNS record](https://images2.imgbox.com/e1/57/FwaJPCnx_o.png)
+
+
+Now, hit your domain URL in the browser. It will take some time but you can visit your application running on EC2 instance by entering your domain name.
+![url](https://images2.imgbox.com/85/d4/8KuloDGj_o.png)
+
+
+But the connection is not secured. To make it secured we need to add `SSL` certificate. We can do it for free with the help of `Certbot`
+
+
+  878  sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+  879  sudo yum-config-manager --enable epel
+  880  amazon-linux-extras list
+  881  sudo yum install python3 python3-venv libaugeas0
+  882  sudo python3 -m venv /opt/certbot/
+  883  sudo /opt/certbot/bin/pip install --upgrade pip
+  884  sudo /opt/certbot/bin/pip install certbot certbot-nginx
+  885  sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot
+  
+
+
