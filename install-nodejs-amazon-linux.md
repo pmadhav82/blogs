@@ -1,4 +1,5 @@
-# How to deploy nodejs app on AWS EC2 with Domain Name
+# Host your nodejs application on AWS EC2 instance with Domain name
+![blog-pic](https://images2.imgbox.com/34/8f/3UoFDTU2_o.png)
 
 1. Create ec2 instalce by choosing linux 2
 
@@ -152,17 +153,95 @@ Now, hit your domain URL in the browser. It will take some time but you can visi
 ![url](https://images2.imgbox.com/85/d4/8KuloDGj_o.png)
 
 
-But the connection is not secured. To make it secured we need to add `SSL` certificate. We can do it for free with the help of `Certbot`
+But the connection is not secured. To make it secured we need to add `SSL` certificate. We can do it for free with the help of `Certbot`. Run following commands to install `certbot`:
+
+```
+sudo yum install python3 python3-venv libaugeas0
+```
+
+```
+   sudo /opt/certbot/bin/pip install --upgrade pip
+   ```
+
+   ```
+   sudo /opt/certbot/bin/pip install certbot certbot-nginx
+   ```
+
+   ```
+   sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot
+   ```
+
+   ```
+   sudo python3 -m venv /opt/certbot/
+   ```
+
+   Once it's done run the following command to get `ssl` certificate for you domain
+
+   ```
+   sudo certbot --nginx -d pblog.online -d www.pblog.online
+   ```
+Here, replace `pblog.online` with your own domain name.
+
+`certbot` will ask you to confirm your domain name and add `ssl` certificate to your domain name. It will change configuration of `nginx.conf` file as well. Once the certificated is added `nginx.conf` file looks like this:
+```
+    server {
+    server_name pblog.online www.pblog.online;
+
+        root         /usr/share/nginx/html;
+
+       # Load configuration files for the default server block.
+        include /etc/nginx/default.d/*.conf;
+
+        error_page 404 /404.html;
+        location / {
+ proxy_pass http://localhost:8000;
+proxy_http_version 1.1;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection 'upgrade';
+proxy_set_header Host $host;
+proxy_cache_bypass $http_upgrade;
+        }
+
+        error_page 500 502 503 504 /50x.html;
+        location = /50x.html {
+        }
+    
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/pblog.online/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/pblog.online/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+
+    server {
+    if ($host = www.pblog.online) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
 
 
-  878  sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-  879  sudo yum-config-manager --enable epel
-  880  amazon-linux-extras list
-  881  sudo yum install python3 python3-venv libaugeas0
-  882  sudo python3 -m venv /opt/certbot/
-  883  sudo /opt/certbot/bin/pip install --upgrade pip
-  884  sudo /opt/certbot/bin/pip install certbot certbot-nginx
-  885  sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot
-  
+    if ($host = pblog.online) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+ 
+        listen 80;
+        listen [::]:80;
+   
+       server_name pblog.online www.pblog.online;
+    return 404; # managed by Certbot
+
+}
 
 
+```
+If you look at it closely, now our app is running on port 443 which is `https` connection. So, we have to make sure that port 443 is allowed in our `ec2` instance security groups. If your `ec2` instance security groups does not have `https` port enabled you can add new rule by clicking `add rule` button and select type `HTTPS`.
+
+![security-groups](https://images2.imgbox.com/d2/e0/4FjSUpJB_o.png)
+
+Now, visit your site by entering `https://www.YOUR_DOMAIN_NAME`.You will be able to see your site which is now secure with ssl certificate.
+
+![ssl-certifite](https://images2.imgbox.com/5c/20/vBhFpNkr_o.png)
+
+This way, you can run your `nodejs` app on `ec2` instance with custom domain name. 
+#### Thank you for reading :)

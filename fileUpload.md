@@ -1,4 +1,7 @@
 # File Upload using multer in ExpressJS
+
+![blog-pic](https://res.cloudinary.com/practicaldev/image/fetch/s--VkMbj7ZW--/c_imagga_scale,f_auto,fl_progressive,h_420,q_auto,w_1000/https://dev-to-uploads.s3.amazonaws.com/uploads/articles/dpyzj1o6s790s2tplpzp.png)
+
 `multer` is a middleware of NodeJS to handle file upload.
 ## Instalation
 ``` npm install multer ```
@@ -144,4 +147,4 @@ app.listen(PORT,()=>console.log(`Server is running on ${PORT}`))
 
 ```
 This way you can upload image to the server using `Expressjs` with the help of `multer`.
-
+### Thanks for reading.
