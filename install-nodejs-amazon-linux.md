@@ -1,7 +1,9 @@
 # Host your nodejs application on AWS EC2 instance with Domain name
 ![blog-pic](https://images2.imgbox.com/34/8f/3UoFDTU2_o.png)
 
-1. Create ec2 instalce by choosing linux 2
+This blog post is about hosting your nodejs application on AWS `EC2` instance with domain name and secured it with the help of `certbot`. Let's get started.
+
+1. Create `Ec2` instalce by choosing linux 2s
 
 2. Leave everything default and click launch instance
 
