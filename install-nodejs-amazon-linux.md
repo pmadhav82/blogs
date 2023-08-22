@@ -66,7 +66,7 @@ require('dotenv').config({path: 'var/app/env/.env'})
 For the access type your `publicIP:portNum`. In my case it is `http://13.54.206.174:3000/`
 
 
-5. If you want to run your sever in the background you can you `pm2` which is a process manager for node.js application. `pm2` can handle to start, restart and stop the server and log managmement. To install `pm2` run following command
+5. If you want to run your sever in the background you can use `pm2` which is a process manager for node.js application. `pm2` can handle to start, restart and stop the server and log managmement. To install `pm2` run following command
 ```
 npm install pm2 -g
 ```
