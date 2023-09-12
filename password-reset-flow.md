@@ -322,6 +322,14 @@ Now, let's create a file `newPasswordForm.handlebars` file inside `views` folder
 
 ```
 
+<div class="main-wrapper">
+
+<div class="login-box">
+{{#if errorMessage}}
+    <div class="messages error-message">
+    {{errorMessage}}
+    </div>
+    {{/if}}
   <form action="/newPassword?token={{token}}&id={{id}}" method="POST">  
   <h2>Enter new password</h2>
 
@@ -338,7 +346,78 @@ Now, let's create a file `newPasswordForm.handlebars` file inside `views` folder
  
   </form>
 
+</div>
+
+</div>
+
 ```
 This form will only shows up if the link is valid.
 
  ![new-password-form](https://images2.imgbox.com/a4/85/37u86Znn_o.png)
+
+4. Setting the new password
+Finally, we have reached to the final step of password reset process. Once the user click on the link and if the link is valid and not expired user can have access to new password form where they can enter new password and submit. Once form is submitted, server will get `post` request in `/newPasswor` route. Let's handle this `post` request.
+
+```
+//accept new password and save it to database
+router.post("/newPassword",  async(req,res)=>{
+    
+    if(req.query.token && req.query.id){
+const {token, id}= req.query;
+let isValid;
+try{
+
+    isValid = await isValidToken({token,id});
+}catch(er){
+    console.log(er)
+}
+if(isValid){
+const {password, repeatPassword}=req.body;
+
+if(password.length<6){
+    
+   return  res.render("newPasswordForm",{
+    token,
+    id,
+    errorMessage:"Password need to have minimum 6 characters"
+   })
+}
+if (password!== repeatPassword){
+   return  res.render("newPasswordForm",{
+    token,
+    id,
+    errorMessage:" Password is not match."
+   })
+}
+
+
+if(password == repeatPassword && password.length>6){
+try{
+    let hashedPassword = await bcrypt.hash(repeatPassword,10);
+    let update_success = await Users.updateOne({_id:id},{password:hashedPassword});
+    if(update_success){
+        req.flash("success", "password is changed successfully.")
+res.redirect("/login");
+    }
+}catch(er){
+    console.log(er)
+}
+}
+} else{
+    res.json({message:"Invalid token or link is expired"})  
+
+}
+
+} else{
+    res.json({message:"Something went wrong! try again latter"})  
+}
+    })
+
+```
+Let's break down above code. Again, we have extracted `token` and `user_id` that came from `req.query` and we have validate that `token` one more time. If we have valid `token`, we have extracted `password` and `repeatPassword` from `req.body` and we have validate the password. If the password is not valid we have render the  same `newPasswordForm` with `token`, `id` and related `errorMessage`.
+If the password requirement is matched, new password is hashed and saved it to the database. Finally, we redirect user to login message with success message.
+![password-changed-success](https://images2.imgbox.com/b7/c6/yLQLlzu4_o.png)
+
+Now, user can login using their new password.
+
+Thank you for taking time to read this blog post, and I hope you find it valuable in your web development journey. If you have any questions or suggestions, please feel free to reach out. Happy coding!
